@@ -1,0 +1,901 @@
+<style>
+	* {
+		outline: transparent;
+		padding: 0;
+		margin: 0;
+		box-sizing: border-box;
+	}
+
+	body {
+		background-color: #1c1f26;
+		color: #fff;
+		font-family: sans-serif;
+		font-weight: bold;
+		font-size: 20px
+	}
+
+	.editparts {
+		width: 40%;
+		background-color: #252932;
+		float: right;
+		padding: 30px;
+		height: 660px;
+		box-shadow: 0 5px 5px #252032;
+	}
+
+	canvas {
+		border: 1px solid #fff;
+		width: 60%;
+		display: inline-block;
+		margin-top: 50px;
+		height: 100%;
+	}
+
+	input[type="file"] {
+		display: inline-block;
+		margin-bottom: 30px;
+		background-color: #fff;
+		color: #252932;
+		padding: 10px 20px;
+		border-radius: 5px;
+	}
+
+	input[type="checkbox"] {
+		position: relative;
+		width: 50px;
+		height: 25px;
+		background-color: #c6c6c6;
+		appearance: none;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		border-radius: 20px;
+		transition: 0.5s;
+		cursor: pointer;
+		display: inline-block;
+		margin-right: 20px;
+	}
+
+	input:checked[type="checkbox"] {
+		background-color: #03a9f4;
+		outline: none;
+	}
+
+	input[type="checkbox"]:before {
+		content: '';
+		width: 25px;
+		height: 25px;
+		border-radius: 50%;
+		background-color: #fff;
+		box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+		position: absolute;
+		top: 0;
+		left: 0;
+		transition: 0.5s;
+	}
+
+	input:checked[type="checkbox"]:before {
+		left: 25px;
+		transition: 0.5s;
+	}
+
+	input[type="range"] {
+		appearance: none;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		width: 250px;
+		height: 10px;
+		background-color: #03a9f4;
+		border-radius: 20px;
+		outline: transparent;
+		cursor: pointer;
+	}
+
+	input[type="range"]::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 30px;
+		height: 30px;
+		background: #ffffff;
+		cursor: pointer;
+		border-radius: 50%;
+		border: none;
+		outline: transparent;
+		box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+	}
+
+	input[type="range"]::-moz-range-thumb {
+		-moz-appearance: none;
+		appearance: none;
+		width: 30px;
+		height: 30px;
+		background: #ffffff;
+		cursor: pointer;
+		border-radius: 50%;
+		border: none;
+		outline: transparent;
+		box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+	}
+
+	tr td {
+		padding: 10px;
+	}
+
+	.button_operate {
+		background: #bee9f5;
+		color: black;
+		cursor: pointer;
+		width: 150px;
+		text-align: center;
+		border-style: none;
+	}
+
+	.button_operate:hover {
+		background: #0d2f81;
+		color: #fff;
+
+	}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div class="editparts">
+	<table>
+		<!-- Take the file as an input-->
+		<tr>
+			<input type="file" id="imageLoader" name="imageLoader" value="upload picture" accept="image/*" />
+		</tr>
+		<!-- Form to implement the sharp function-->
+		<tr>
+			<form enctype="multipart/form-data" id="sharp_form">
+				<input type="file" style="display: none;" id="sharp_image_file">
+			<td><input type="range" min="0.1" max="4.9" step="0.2" id="sharp_value"></td>
+			<td><button class="button_operate" type="submit"
+					style="padding: 8px;    font-size: 14px; font-weight: 700;border-radius: 4px;">Sharpen</button></td>
+
+				</form>
+		</tr>
+		<!-- Form to implement the blur function-->
+		<tr>
+			<form enctype="multipart/form-data" id="blur_form">
+				<input type="file" style="display: none;" id="blur_image_file">
+			<td><input type="range" min="1" max="29" step="2" id="blur_value"></td>
+			<td><button class="button_operate" type="submit"
+					style="padding: 8px;  font-size: 14px; font-weight: 700;border-radius: 4px">Blur</button></td>
+
+				</form>
+		</tr>
+		<!-- Form to implement the gamma correct function-->
+		<tr>
+			<form enctype="multipart/form-data" id="gamma_correct_form">
+				<input type="file" style="display: none;" id="gamma_correct_image_file">
+				<td><input type="number" step="0.01" placeholder="default value is: 0.5" id="gamma_correct_value"></td>
+				<td><button class="button_operate" type="submit"
+						style="padding: 8px; font-size: 14px; font-weight: 700;border-radius: 4px">Gamma
+						Correct</button>
+				</td>
+			</form>
+
+		</tr>
+		<!-- Form to implement the log transform function-->
+		<tr>
+			<td></td>
+			<form enctype="multipart/form-data" id="log_trans_form">
+				<input type="file" style="display: none;" id="log_trans_image_file">
+				<td><button class="button_operate" type="submit"
+						style="padding: 8px;  font-size: 14px; font-weight: 700;border-radius: 4px">Log
+						Transform</button>
+				</td>
+			</form>
+		</tr>
+		<!-- Form to implement the histogram eq function-->
+		<tr>
+			<td></td>
+			<form enctype="multipart/form-data" id="hist_eq_form">
+				<input type="file" style="display: none;" id="hist_eq_image_file">
+				<td><button class="button_operate" type="submit"
+						style="padding: 8px;   font-size: 14px; font-weight: 700;border-radius: 4px">Equalize
+						Histogram</button></td>
+			</form>
+		</tr>
+		<!-- Form to implement the negative function-->
+		<tr>
+			<td></td>
+			<form enctype="multipart/form-data" id="negative_form">
+				<input type="file" style="display: none;" id="negative_image_file">
+				<td><button class="button_operate" type="submit"
+						style="padding: 8px;   font-size: 14px; font-weight: 700;border-radius: 4px"
+						id="negative_image">Negative</button></td>
+			</form>
+		</tr>
+
+	</table>
+	<br>
+	<hr>
+
+
+	<table>
+		<tr style="visibility: hidden;">
+			<td><input type="range" min="0" max="3" step="0.3" id="greyscale"></td>
+			<td><button class="button_operate"
+					style="padding: 8px;  border: none; font-size: 14px; font-weight: 700;border-radius: 4px">Blur</button>
+			</td>
+
+
+		</tr>
+		<tr>
+
+		<!-- Buttons for undo operations -->
+			<td><button class="button_operate" id="undo_operation"
+					style="padding: 8px;   border: none; font-size: 14px; font-weight: 700;border-radius: 4px"><i
+						class="fa fa-reply"></i> &nbsp; Undo</button></td>
+			<td><button class="button_operate" id="undo_all_operation"
+					style="padding: 8px;   border: none; font-size: 14px; font-weight: 700;border-radius: 4px"><i
+						class="fa fa-reply-all"></i> &nbsp; Undo All</button></td>
+
+		</tr>
+
+
+	</table>
+	<table>
+
+		<tr>
+			<!-- Button for saving the image-->
+
+			<td><button class="button_operate" id="save_current_image"
+					style="padding: 8px;   border: none; font-size: 14px; font-weight: 700;border-radius: 4px"><i
+						class="fa fa-cloud-download"></i> &nbsp; Save Image</button></td>
+		</tr>
+
+
+	</table>
+
+	<!-- Some hidden values to track the operations-->
+	<input type="hidden" id="current_image">
+	<input type="hidden" id="uploaded_image">
+	<input type="file" id="current_image_file" style="display: none;">
+	<input type="hidden" id="operation_counter">
+
+
+</div>
+<!-- Canvas to display image -->
+<canvas id="canvas"></canvas>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Image Loader Function /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+	var ctx = document.getElementById("canvas").getContext("2d");
+	var canvas = document.getElementById("canvas");
+
+	var imageLoader = document.getElementById("imageLoader");
+	imageLoader.addEventListener("change", handleImage);
+
+	var img, mydata;;
+	function handleImage(e) {
+		var reader = new FileReader();
+		reader.onload = function (event) {
+			img = new Image();
+			img.onload = function () {
+				canvas.width = img.width;
+				canvas.height = img.height;
+				ctx.drawImage(img, 0, 0);
+				newImage = ctx.getImageData(0, 0, 800, 400);
+				mydata = newImage.data;
+				newImage.data = mydata;
+				ctx.putImageData(newImage, 0, 0);
+			};
+			img.src = event.target.result;
+		};
+		if (e.target.id == "imageLoader") {
+			reader.readAsDataURL(e.target.files[0]);
+			console.log(e.target.value);
+			var filename = e.target.value.replace(/^.*[\\\/]/, '')
+			document.getElementById('current_image').value = filename;
+			document.getElementById('uploaded_image').value = filename;
+			document.getElementById('operation_counter').value = "1";
+		}
+	}
+</script>
+<script>
+	$(document).ready(function () {
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Negative form submit script /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+
+		$(document).on('submit', '#negative_form', function (e) {
+			if (document.getElementById('operation_counter').value == "1") {
+				var file1 = document.querySelector('#imageLoader');
+				var file2 = document.querySelector('#negative_image_file');
+				file2.files = file1.files;
+				e.preventDefault();
+				var data = new FormData();
+				var filename = $("#negative_image_file").val().replace(/^.*[\\\/]/, '')
+				data.append("file", $("#negative_image_file")[0].files[0])
+				data.append("image_name", $("#current_image").val())
+				$.ajax({
+					type: 'POST',
+					url: '{% url "make_negative" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+				})
+			}
+			else {
+				e.preventDefault();
+				var data = new FormData();
+				data.append("image_name", $("#current_image").val())
+				$.ajax({
+					type: 'POST',
+					url: '{% url "make_negative" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+
+
+				});
+			}
+
+		});
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Undo Operation Function /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+		$("#undo_operation").click(function () {
+			if (document.getElementById('operation_counter').value != "1") {
+				var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+				filename = filename.replace('.jpg', '')
+				document.getElementById('current_image').value = filename;
+				document.getElementById('uploaded_image').value = filename;
+				document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) - 1).toString();
+				var url = 'http://127.0.0.1:8000/static/' + filename;
+				var ctx = document.getElementById("canvas").getContext("2d");
+				var canvas = document.getElementById("canvas");
+				img = new Image();
+				img.src = url;
+				img.onload = function () {
+					canvas.width = img.width;
+					canvas.height = img.height;
+					ctx.drawImage(img, 0, 0);
+					newImage = ctx.getImageData(0, 0, 800, 400);
+					mydata = newImage.data;
+					newImage.data = mydata;
+					ctx.putImageData(newImage, 0, 0);
+				};
+			}
+
+		});
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Undo all operations Function /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+		$("#undo_all_operation").click(function () {
+			if (document.getElementById('operation_counter').value != "1") {
+				var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+				filename = filename.replaceAll('.jpg', '')
+				filename = filename + '.jpg'
+				document.getElementById('current_image').value = filename;
+				document.getElementById('uploaded_image').value = filename;
+				document.getElementById('operation_counter').value = "1";
+				var url = 'http://127.0.0.1:8000/static/' + filename;
+				var ctx = document.getElementById("canvas").getContext("2d");
+				var canvas = document.getElementById("canvas");
+				img = new Image();
+				img.src = url;
+				img.onload = function () {
+					canvas.width = img.width;
+					canvas.height = img.height;
+					ctx.drawImage(img, 0, 0);
+					newImage = ctx.getImageData(0, 0, 800, 400);
+					mydata = newImage.data;
+					newImage.data = mydata;
+					ctx.putImageData(newImage, 0, 0);
+				};
+			}
+		});
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Save image Function /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+		$("#save_current_image").click(function () {
+			var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+			var a = $("<a>").attr("href", "http://127.0.0.1:8000/static/" + filename).attr("download", "img.png").appendTo("body");
+
+			a[0].click();
+
+			a.remove();
+		});
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Histogram eq. Function /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+		$(document).on('submit', '#hist_eq_form', function (e) {
+			if (document.getElementById('operation_counter').value == "1") {
+				var file1 = document.querySelector('#imageLoader');
+				var file2 = document.querySelector('#hist_eq_image_file');
+				file2.files = file1.files;
+				e.preventDefault();
+				var data = new FormData();
+				var filename = $("#hist_eq_image_file").val().replace(/^.*[\\\/]/, '')
+				data.append("file", $("#hist_eq_image_file")[0].files[0])
+				data.append("image_name", $("#current_image").val())
+				$.ajax({
+					type: 'POST',
+					url: '{% url "hist_equal" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+				})
+			}
+			else {
+				e.preventDefault();
+				var data = new FormData();
+				data.append("image_name", $("#current_image").val())
+				$.ajax({
+					type: 'POST',
+					url: '{% url "hist_equal" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+
+
+				});
+			}
+		});
+	///////////////////////////////////////////////////////////////////////////////////
+	/// log transform Function /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+		$(document).on('submit', '#log_trans_form', function (e) {
+			if (document.getElementById('operation_counter').value == "1") {
+				var file1 = document.querySelector('#imageLoader');
+				var file2 = document.querySelector('#log_trans_image_file');
+				file2.files = file1.files;
+				e.preventDefault();
+				var data = new FormData();
+				var filename = $("#log_trans_image_file").val().replace(/^.*[\\\/]/, '')
+				data.append("file", $("#log_trans_image_file")[0].files[0])
+				data.append("image_name", $("#current_image").val())
+				$.ajax({
+					type: 'POST',
+					url: '{% url "log_transform" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+				})
+			}
+			else {
+				e.preventDefault();
+				var data = new FormData();
+				data.append("image_name", $("#current_image").val())
+				$.ajax({
+					type: 'POST',
+					url: '{% url "log_transform" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+
+
+				});
+			}
+
+		});
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Gamma correct Function /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+		$(document).on('submit', '#gamma_correct_form', function (e) {
+			if (document.getElementById('operation_counter').value == "1") {
+				var file1 = document.querySelector('#imageLoader');
+				var file2 = document.querySelector('#gamma_correct_image_file');
+				file2.files = file1.files;
+				e.preventDefault();
+				var data = new FormData();
+				var filename = $("#gamma_correct_image_file").val().replace(/^.*[\\\/]/, '')
+				data.append("file", $("#gamma_correct_image_file")[0].files[0])
+				data.append("image_name", $("#current_image").val());
+				var gamma_value = document.getElementById('gamma_correct_value').value
+				if(!gamma_value){
+					gamma_value = 0.5;
+				}
+				data.append("gamma_value", gamma_value);
+				$.ajax({
+					type: 'POST',
+					url: '{% url "gamma_correct" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+				})
+			}
+			else {
+				e.preventDefault();
+				var data = new FormData();
+				data.append("image_name", $("#current_image").val());
+				var gamma_value = document.getElementById('gamma_correct_value').value
+				if(!gamma_value){
+					gamma_value = 0.5;
+				}
+				data.append("gamma_value", gamma_value);
+				$.ajax({
+					type: 'POST',
+					url: '{% url "gamma_correct" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+
+
+				});
+			}
+
+		});
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Blur Function /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+		$(document).on('submit', '#blur_form', function (e) {
+			if (document.getElementById('operation_counter').value == "1") {
+				var file1 = document.querySelector('#imageLoader');
+				var file2 = document.querySelector('#blur_image_file');
+				file2.files = file1.files;
+				e.preventDefault();
+				var data = new FormData();
+				var filename = $("#blur_image_file").val().replace(/^.*[\\\/]/, '')
+				data.append("file", $("#blur_image_file")[0].files[0])
+				data.append("image_name", $("#current_image").val());
+				var blur_value = document.getElementById('blur_value').value
+				
+				data.append("blur_value", blur_value);
+				$.ajax({
+					type: 'POST',
+					url: '{% url "blur" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+				})
+			}
+			else {
+				e.preventDefault();
+				var data = new FormData();
+				data.append("image_name", $("#current_image").val());
+				var blur_value = document.getElementById('blur_value').value
+				
+				data.append("blur_value", blur_value);
+				$.ajax({
+					type: 'POST',
+					url: '{% url "blur" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+
+
+				});
+			}
+
+		});
+
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Sharp Function /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+
+		$(document).on('submit', '#sharp_form', function (e) {
+			if (document.getElementById('operation_counter').value == "1") {
+				var file1 = document.querySelector('#imageLoader');
+				var file2 = document.querySelector('#sharp_image_file');
+				file2.files = file1.files;
+				e.preventDefault();
+				var data = new FormData();
+				var filename = $("#sharp_image_file").val().replace(/^.*[\\\/]/, '')
+				data.append("file", $("#sharp_image_file")[0].files[0])
+				data.append("image_name", $("#current_image").val());
+				var sharp_value = document.getElementById('sharp_value').value
+				
+				data.append("sharp_value", sharp_value);
+				$.ajax({
+					type: 'POST',
+					url: '{% url "sharp" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+				})
+			}
+			else {
+				e.preventDefault();
+				var data = new FormData();
+				data.append("image_name", $("#current_image").val());
+				var sharp_value = document.getElementById('sharp_value').value
+				
+				data.append("sharp_value", sharp_value);
+				$.ajax({
+					type: 'POST',
+					url: '{% url "blur" %}',
+					processData: false,
+					contentType: false,
+					mimeType: "multipart/form-data",
+					data: data,
+					success: function () {
+
+						var filename = $("#current_image").val().replace(/^.*[\\\/]/, '');
+						filename = filename + '.jpg';
+						document.getElementById('current_image').value = filename;
+						document.getElementById('uploaded_image').value = filename;
+						document.getElementById('operation_counter').value = (parseInt(document.getElementById('operation_counter').value) + 1).toString();
+						var url = 'http://127.0.0.1:8000/static/' + filename;
+						var ctx = document.getElementById("canvas").getContext("2d");
+						var canvas = document.getElementById("canvas");
+						img = new Image();
+						img.src = url;
+						img.onload = function () {
+							canvas.width = img.width;
+							canvas.height = img.height;
+							ctx.drawImage(img, 0, 0);
+							newImage = ctx.getImageData(0, 0, 800, 400);
+							mydata = newImage.data;
+							newImage.data = mydata;
+							ctx.putImageData(newImage, 0, 0);
+						};
+					}
+
+
+
+				});
+			}
+
+		});
+	});
+</script>

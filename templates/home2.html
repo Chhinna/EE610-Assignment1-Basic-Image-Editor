@@ -1,0 +1,266 @@
+{% load static %}
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Basic Image Editor</title>
+	<!-- The Wheel logo displayed in the Tab Heading -->
+	<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+	<!-- I have used bootstrap for buttons, and jQuery for click actions - to make it simple. -->
+	<link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+	<script src="{% static 'jquery.min.js' %}"></script>
+	<!-- CSS and JS which i have used in my GUI -->
+	<link rel="stylesheet" type="text/css" href="{% static 'gui.css' %}">
+	<script src="{% static 'gui.js' %}"></script>
+</head>
+<body>
+	<!-- This will be hidden by default, but visible when something is loading -->
+	<div id="body-overlay"><div><img src="images/_gui/loading.gif" width="64px" height="64px"/></div></div>
+
+	<controls style="left:0;">
+		<div>
+			<div class="control-box">
+				<!-- Upload Image -->
+				<div class="control-row">
+					<div class="col-sm-6">
+					<form id="image_form" method="POST" action="upload.py" enctype="multipart/form-data">
+						<button type="button" class="btn btn-default btn-md" id="upload_button">
+							<span class="glyphicon glyphicon-upload"></span> Upload
+						</button>
+						<input name="flag" value="image" type="hidden">
+						<input id="upload_input" type="file" onchange="customSubmit(this.form)" name="pic" accept="image/*" style="display:none;">
+						<!-- <input type="submit" name="submit" value="submit"> -->
+					</form>
+					</div>
+					<!-- Download Image -->
+					<div class="col-sm-6">
+						<a id="target_slave" href="images/_gui/default.jpg" download>
+						<button type="button" class="btn btn-default btn-md">
+							<span class="glyphicon glyphicon-save"></span> Save
+						</button>
+					</a>
+					</div>
+				</div>
+				<div class="control-row">
+					<!-- Zoom In -->
+					<div class="col-sm-6">
+						<button type="button" class="btn btn-default btn-md" id="zoom_in">
+							<span class="glyphicon glyphicon-zoom-in"></span> Max
+						</button>
+					</div>
+					<!-- Zoom Out -->
+					<div class="col-sm-6">
+						<button type="button" class="btn btn-default btn-md" id="zoom_out">
+							<span class="glyphicon glyphicon-zoom-out"></span> Min
+						</button>
+					</div>
+				</div>
+				<div class="control-row">
+					<!-- Undo -->
+					<div class="col-sm-6">
+						<button type="button" class="btn btn-default btn-md" id="undo">
+							<span style="transform: rotateY(180deg);" class="glyphicon glyphicon-repeat"></span> <span class="text">Undo</span>
+						</button>
+					</div>
+					<!-- Redo -->
+					<div class="col-sm-6">
+						<button type="button" class="btn btn-default btn-md" id="redo">
+							<span class="glyphicon glyphicon-repeat"></span> <span class="text">Redo</span>
+						</button>
+					</div>
+				</div>
+				<!-- Reset to Original Image -->
+				<div class="control-row-single" >
+					<button type="button" class="btn btn-default btn-md" id="reset">
+						<span class="glyphicon glyphicon-refresh"></span> Undo All
+					</button>
+				</div>
+				<!-- Toggle View - Original/Recent Image -->
+				<div class="control-row-single" >
+						<button type="button" class="btn btn-default btn-md" id="targetChange" show="0">
+							<span class="glyphicon glyphicon-eye-open"></span> View <span id="text">Original</span>
+						</button>
+				</div>
+			</div>
+			<div class="control-box">
+				<div class="control-row-single" >
+					<a target="_blank" href="images/_archive/">
+						<button type="button" class="btn btn-default btn-md">
+							<span class="glyphicon glyphicon-bookmark" style="color: #4870bc;"></span> Visit Archive
+						</button>
+					</a>
+				</div>
+			</div>
+			<div class="control-box">
+				<div class="control-row-single" >
+					<form id="kernel_form" method="POST" action="upload.py" enctype="multipart/form-data">
+						<button type="button" class="btn btn-default btn-md" id="upload_kernel_button">
+							<span class="glyphicon glyphicon-upload"></span> Upload Kernel
+						</button>
+						<input name="flag" value="kernel" type="hidden">
+						<input id="upload_kernel_input" type="file" onchange="customSubmitKernel(this.form)" name="pic" accept="image/*" style="display:none;">
+						<!-- <input type="submit" name="submit" value="submit"> -->
+					</form>
+				</div>
+			</div>
+			<div class="control-box">
+				<div style="color:white;text-align:center;"><b>KERNEL:<b></div>
+				<div id="kernel-div">
+					<img id="kernel" src="images/_gui/broken.png" onload="hideLoading();">
+				</div>
+			</div>
+		</div>
+	</controls>
+
+	<!-- This is the image display area -->
+	<plank>
+		<img id="target" src="images/_gui/default.jpg" onload="hideLoading();" style="transform:scale(1);">
+		<img id="target_0" src="images/_gui/default.jpg" onload="hideLoading();" style="transform:scale(1);display:none;">
+	</plank>
+	<!-- The control panel of my GUI -->
+	<controls style="right:0px;">
+		<div>
+			<div class="control-box">
+				<div class="control-row" style="margin: 10px 0px;">
+					<div id="degrade_frame">
+						<div class="col-sm-10">
+						<input placeholder="sigma" value="" name="sigma" class="form-control" style="width:120%;">
+						</div><div class="col-sm-2"></div>
+						<div class="col-sm-12">
+						<button type="button" class="btn btn-default btn-md" id="degrade" style="width:100%;">
+							<b>Degrade</b>
+						</button>
+						</div>
+					</div>
+				</div>
+				<!-- Deblur - Using Inv Filter -->
+				<div class="control-row-single">
+					<button type="button" class="btn btn-default btn-md" id="deblur_inv">
+						<b>Deblur</b> (Inv. Filter)
+					</button><br>
+				</div>
+				<!-- Deblur - Using Truncated Inverse Filter -->
+				<div class="control-row-single" style="margin: 10px 0px;">
+					<div id="trunc_frame">
+						<input id="trunc_range" class="form-control" type="range" min="1" max="400" value="150">
+						<button type="button" class="btn btn-default btn-md" id="trunc">
+							<b>Deblur</b> (Trunc. Inv. Filter)
+						</button>
+					</div>
+				</div>
+				<!-- Deblur - Using Weiner Filter -->
+				<div class="control-row" style="margin: 10px 0px;">
+					<div id="weiner_frame">
+						<div class="col-sm-10">
+							<input placeholder="K" value="" name="k" class="form-control" style="width:120%;">
+						</div><div class="col-sm-2"></div>
+						<div class="col-sm-12">
+						<button type="button" class="btn btn-default btn-md" id="weiner" style="width:100%;">
+							<b>Deblur</b> (Weiner Filt.)
+						</button>
+						</div>
+					</div>
+					<!-- <div id="weiner_frame">
+						<input id="weiner_range" class="form-control" type="range" min="1" max="30" value="15">
+						<button type="button" class="btn btn-default btn-md" id="weiner">
+							<b>Deblur</b> (Weiner Filter)
+						</button>
+					</div> -->
+				</div>
+				<!-- Deblur - Using Constrained Least Square Filtering -->
+				<div class="control-row" style="margin: 10px 0px;">
+					<div id="clsfilter_frame">
+						<div class="col-sm-10">
+						<input placeholder="&gamma; (gamma)" value="" name="cls_gamma" class="form-control" style="width:120%;">
+						</div><div class="col-sm-2"></div>
+						<div class="col-sm-12">
+						<button type="button" class="btn btn-default btn-md" id="clsfilter" style="width:100%;">
+							<b>Deblur</b> (CLS Filt.)
+						</button>
+						</div>
+					</div>
+					<!-- <div id="clsfilter_frame">
+						<input id="clsfilter_range" class="form-control" type="range" min="1" max="30" value="15">
+						<button type="button" class="btn btn-default btn-md" id="clsfilter">
+							<b>Deblur</b> (CLS Filter)
+						</button>
+					</div> -->
+				</div>
+			</div>
+			
+			<form enctype="multipart/form-data" id="hist_eq_form">
+				<input type="file" style="display: none;" id="hist_eq_image_file">
+			<td><button class="button_operate" type="submit"
+					style="padding: 8px;   font-size: 14px; font-weight: 700;border-radius: 4px">Equalize
+					Histogram</button></td>
+				</form>
+
+			<div class="control-box">
+				<!-- Histogram Equalisation -->
+				<div class="control-row-single">
+					<button type="button" class="btn btn-default btn-md" id="histeq">
+					Histogram Equalise
+					</button><br>
+				</div>
+				<!-- Log Transform -->
+				<div class="control-row-single">
+					<button type="button" class="btn btn-default btn-md" id="logtx">
+					Log Transform
+				</button><br>
+				</div>
+				<!-- Gamma Correction -->
+				<div class="control-row">
+					<div id="gamma_correct_frame">
+						<div class="col-sm-6">
+						<input placeholder="gamma" value="" name="gamma" class="form-control" style="width:120%;">
+						</div>
+						<div class="col-sm-6">
+						<button type="button" class="btn btn-default btn-md" id="gamma_correct">
+							<b>&gamma;</b> Correct
+						</button>
+						</div>
+					</div>
+				</div>
+				<!-- Blurring -->
+				<div class="control-row-single" style="margin: 10px 0px;">
+					<div id="blur_frame">
+						<input id="blur_range" class="form-control" type="range" min="1" max="30" value="15">
+						<button type="button" class="btn btn-default btn-md" id="blur">
+							Blur
+						</button>
+					</div>
+				</div>
+				<!-- Sharpening -->
+				<div class="control-row-single">
+					<div id="sharp_frame">
+						<input id="sharp_range" class="form-control" divideby="100" type="range" min="1" max="50" value="10">
+						<button type="button" class="btn btn-default btn-md" id="sharp">
+							Sharp
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="control-box">
+				<!-- Salt & Pepper Noise-->
+				<div class="control-row-single">
+					<div id="spnoise_frame">
+						<input id="spnoise_range" class="form-control" divideby="100" type="range" min="1" max="50" value="10">
+						<button type="button" class="btn btn-default btn-md" id="spnoise">
+							Add Salt & Pepper Noise
+						</button>
+					</div>
+				</div>
+				<!-- Median Filtering-->
+				<div class="control-row-single">
+					<div id="medianfilt_frame">
+						<input id="medianfilt_range" class="form-control" type="range" min="3" max="15" value="3">
+						<button type="button" class="btn btn-default btn-md" id="medianfilt">
+							Median Filter
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</controls>
+	<!-- Control Panel Ends Here -->
+</body>
+</html>
